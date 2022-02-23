@@ -8,7 +8,7 @@
       "methods": [
         "get"
       ],
-      "route":"api/user"
+      "route":"api/users"
     },
     {
       "type": "http",
