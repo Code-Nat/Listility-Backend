@@ -5,21 +5,22 @@
  * Author: Glaucia Lemos – (Twitter: @glaucia_lemos86)
  */
 
- const { MongoClient } = require("mongodb");
+ const MongoClient = require('mongoose');
 
  const config = {
-   url: Environment.GetEnvironmentVariable("mongoDB/address"),
-   dbName: Environment.GetEnvironmentVariable("collectionName")
+   url: process.env["DBAddress"],
+   dbName: process.env["DBName"]
  };
  
  async function createConnection() {
-   const connection = await MongoClient.connect(config.url, {
-     useNewUrlParser: true
-   });
-   const db = connection.db(config.dbName);
+   const connection = await MongoClient.connect(process.env["DBAddress"]);
+   //const db = connection.db(config.dbName);
+   
+  //const schema = connection.model('user', Schema);
    return {
-     connection,
-     db
+     connection//,
+     //db,
+     //schema
    };
  }
  
