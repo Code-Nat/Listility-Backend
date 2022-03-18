@@ -1,22 +1,26 @@
 const mongoDB = require("../shared/mongo");
+const Schemas = require("../shared/DBSchemas");
 
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
     const name = (req.query.name || (req.body && req.body.name));
 
-    const { db, connection, schema } = await mongoDB();
+    /*const { db, connection } = await mongoDB();
 
-    const Schema = connection.Schema({
+    connection.Schema({
         name: String,
         email: String,
         password: String,
         lastName: String,
         location: String
-      });//db.collection('listility_users');
-    const users = connection.model('listility_users', Schema);
+      });
 
-    const reply = await users.find();
+    const users = connection.model('listility_users', Schema);
+      */
+    const connection = await mongoDB.connect();
+    const user = await connection.model('users',Schemas.user);
+    const reply = await user.find();
         console.log(reply);
         const responseMessage = {
             status:200,
