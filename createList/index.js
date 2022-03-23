@@ -1,13 +1,45 @@
+const mongoDB = require("../shared/mongo");
+const Schemas = require("../shared/DBSchemas");
+const mongoose = require("mongoose");
+
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+    const title = (req.query.title || (req.body && req.body.title));
 
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+    //check if ID exsist before procceding
+    if (!title)
+    {
+        const responseMessage = {
+            status:400,
+            body: {
+                reason: "missing title"
+            }
+        };
+        context.res = responseMessage;
+        return;
+    }
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
+    const connection = await mongoDB.connect();
+    const list = await connection.model('lists',Schemas.list);
+
+    let userID = new mongoose.Types.ObjectId('6227983a17c55fc267eb0547');
+    try {
+        result = await list.create({
+            listTitle: title, 
+            dateCreated:new Date(), 
+            owningUser:userID
+        });
+
+        context.res = {
+            status:201,
+            body: result
+        };
+    }
+    catch (err)
+    {
+        context.res = {
+            status:400,
+            body: err
+        };
+    }
 }
+

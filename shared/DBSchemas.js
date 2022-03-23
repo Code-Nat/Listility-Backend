@@ -51,7 +51,34 @@ const task = new mongoose.Schema({
 });
 
 const list = new mongoose.Schema({
-
+  listTitle: {
+    type: String,
+    required: [true, 'Please provide title'],
+    minlength: 3,
+    maxlength: 20,
+    trim: true
+  },
+  dateCreated: {
+    type: Date,
+    default: new Date()
+  },
+  owningUser: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'users'
+  },
+  taskList: [{
+    
+  }],
+  shares: [{
+    userID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    isEdit: {
+      type: Boolean,
+      default: false
+    }
+  }]
 });
 
 module.exports = {

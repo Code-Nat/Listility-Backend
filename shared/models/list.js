@@ -1,19 +1,38 @@
 import mongoose from 'mongoose'
 
-const JobSchema = new mongoose.Schema(
-  {
-    noteTitle: {
-      type: String,
-      default: '',
-      required: true,
-    },
-    createdBy: {
-      type: mongoose.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'Please provide user'],
-    },
+const list = new mongoose.Schema({
+  listTitle: {
+    type: String,
+    required: [true, 'Please provide title'],
+    minlength: 3,
+    maxlength: 20,
+    trim: true
   },
-  { timestamps: true }
-)
+  dateCreated: {
+    type: Date,
+    default: new Date()
+  },
+  owningUser: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'users'
+  },
+  taskList: [{
+    _id:{
+      type:mongoose.Types.ObjectId()
+    },
+    taskTitle: String,
+    isChecked: Boolean
+  }],
+  shares: [{
+    userID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    isEdit: {
+      type: Boolean,
+      default: false
+    }
+  }]
+});
 
-export default mongoose.model('Lists', ListSchema)
+export default new mongoose.Schema('Lists', ListSchema)
