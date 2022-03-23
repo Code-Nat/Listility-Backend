@@ -1,27 +1,22 @@
-/**
- * Arquivo: mongo.js
- * Data: 01/25/2021
- * Descrição: file responsible for handling the database connection locally
- * Author: Glaucia Lemos – (Twitter: @glaucia_lemos86)
- */
-
- const MongoClient = require('mongoose');
+const mongoose = require('mongoose');
 
  const config = {
-   url: process.env["DBAddress"],
+   uri: process.env["DBAddress"],
    dbName: process.env["DBName"]
  };
  
- async function createConnection() {
-   const connection = await MongoClient.connect(process.env["DBAddress"]);
-   //const db = connection.db(config.dbName);
-   
-  //const schema = connection.model('user', Schema);
-   return {
-     connection//,
-     //db,
-     //schema
-   };
- }
+ let conn = null;
  
- module.exports = createConnection;
+ exports.connect = async function() {
+   if (conn == null) {
+     conn = mongoose.connect(config.uri, {
+       serverSelectionTimeoutMS: 5000
+     }).then(() => mongoose);
+     
+     // `await`ing connection after assigning to the `conn` variable
+     // to avoid multiple function calls creating new connections
+     await conn;
+   }
+ 
+   return conn;
+ };

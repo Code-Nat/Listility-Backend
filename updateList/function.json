@@ -6,9 +6,9 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get"
+        "put"
       ],
-      "route":"v1/user"
+      "route": "v1/list"
     },
     {
       "type": "http",
