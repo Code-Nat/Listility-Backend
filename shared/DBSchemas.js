@@ -1,53 +1,51 @@
 const mongoose = require("mongoose");
 const validator = require ('validator');
+const bcrypt = require ('bcryptjs');
+const jwt = require ('jsonwebtoken');
 
 const user = new mongoose.Schema({
     name: {
-        type: String,
-        required: [true, 'Please provide name'],
-        minlength: 3,
-        maxlength: 20,
-        trim: true,
+      type: String,
+      required: [true, 'Please provide name'],
+      minlength: 3,
+      maxlength: 20,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+      default: 'lastName',
+    },
+    email: {
+      type: String,
+      required: [true, 'Please provide email'],
+      validate: {
+        validator: validator.isEmail,
+        message: 'Please provide a valid email',
       },
-      lastName: {
-        type: String,
-        trim: true,
-        maxlength: 20,
-        default: 'lastName',
-      },
-      email: {
-        type: String,
-        required: [true, 'Please provide email'],
-        validate: {
-          validator: validator.isEmail,
-          message: 'Please provide a valid email',
-        },
-        unique: true,
-      },
-      password: {
-        type: String,
-        required: [true, 'Please provide password'],
-        minlength: 6,
-        select: false,
-      },
-      provider: {
-        type: String,
-        trim: true,
-        maxlength: 20,
-        default: '',
-      },
-      providerID: {
-          type: String
-      },
-      key: {
-          type: Array,
-          maxLength: 46,
-          default: []
-      }
-});
-
-const task = new mongoose.Schema({
-
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: [true, 'Please provide password'],
+      minlength: 6,
+      select: false,
+    },
+    provider: {
+      type: String,
+      trim: true,
+      maxlength: 20,
+      default: '',
+    },
+    providerID: {
+        type: String
+    },
+    key: {
+        type: Array,
+        maxLength: 46,
+        default: []
+    }
 });
 
 const list = new mongoose.Schema({
@@ -67,7 +65,9 @@ const list = new mongoose.Schema({
     ref: 'users'
   },
   taskList: [{
-    
+    id:String,
+    taskTitle: String,
+    isChecked: Boolean
   }],
   shares: [{
     userID: {
@@ -81,8 +81,33 @@ const list = new mongoose.Schema({
   }]
 });
 
+user.pre('save', async function () {
+  // console.log(this.modifiedPaths())
+  if (!this.isModified('password')) return;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+user.post('save', function(error, doc, next) {
+  if (error.name === 'MongoServerError' && error.code === 11000) {
+    next(new Error('There was a duplicate email error'));
+  } else {
+    next(error);
+  }
+});
+
+user.methods.createJWT = function () {
+  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_LIFETIME
+  });
+};
+
+user.methods.comparePassword = async function (candidatePassword) {
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  return isMatch;
+}
+
 module.exports = {
     user: user,
-    task: task,
     list: list
 }
