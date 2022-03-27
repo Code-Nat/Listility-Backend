@@ -8,7 +8,7 @@
       "methods": [
         "post"
       ],
-      "route": "v1/list/task"
+      "route": "v1/lists/{listID}/task"
     },
     {
       "type": "http",

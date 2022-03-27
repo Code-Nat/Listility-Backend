@@ -3,7 +3,7 @@ const Schemas = require("../shared/DBSchemas");
 const mongoose = require("mongoose");
 
 module.exports = async function (context, req) {
-    const title = (req.query.title || (req.body && req.body.title));
+    const title = (req.query.listTitle || (req.body && req.body.listTitle));
 
     //check if ID exsist before procceding
     if (!title)
@@ -21,7 +21,7 @@ module.exports = async function (context, req) {
     const connection = await mongoDB.connect();
     const list = await connection.model('lists',Schemas.list);
 
-    let userID = new mongoose.Types.ObjectId('6227983a17c55fc267eb0547');
+    let userID = new mongoose.Types.ObjectId('623c79e8626d52f11c600b5c');
     try {
         result = await list.create({
             listTitle: title, 

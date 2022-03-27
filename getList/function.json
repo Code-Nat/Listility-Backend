@@ -8,7 +8,7 @@
       "methods": [
         "get"
       ],
-      "route": "v1/list"
+      "route": "v1/lists"
     },
     {
       "type": "http",
