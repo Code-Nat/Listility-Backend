@@ -3,23 +3,24 @@ const Schemas = require("../shared/DBSchemas");
 const mongoose = require('mongoose')
 
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
-
-    /*const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
-    */
-
     const listId = (req.query.listid || (req.body && req.body.listid));
+
+    if (!listID)
+    {
+        context.res = {
+            status:400,
+            body: "Missing list ID"
+        };
+        return;
+    }
 
     const connection = await mongoDB.connect();
     const list = await connection.model('lists',Schemas.list);
 
-    context.res = await list.findByIdAndDelete(listId, function (err) {
-        if(err) 
+   /* let result = */await list.findByIdAndDelete(mongoose.Types.ObjectId(listId), err => {
+        if(err)
         {
-            return context.res = {
+            context.res = {
                 // status: 200, /* Defaults to 200 */
                 status:404,
                 body: err
@@ -28,14 +29,12 @@ module.exports = async function (context, req) {
         }
         else
         {
-            return context.res = {
+            context.res = {
                 // status: 200, /* Defaults to 200 */
                 status:204,
                 body: ""
             };
+            //context.log("Successful deletion");
         }
-        console.log("Successful deletion");
-      });
-
-    
+      }).catch (err => { context.log (err); });
 }

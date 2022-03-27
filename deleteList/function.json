@@ -8,7 +8,7 @@
       "methods": [
         "delete"
       ],
-      "route": "v1/lists"
+      "route": "v1/lists/{listID}"
     },
     {
       "type": "http",
