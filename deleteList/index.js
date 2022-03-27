@@ -6,9 +6,9 @@ module.exports = async function (context, req) {
     const listId = (req.query.listid || (req.body && req.body.listid));
 
 
-    if (!listId)
+    /*if (!listId)
         listId = {listID};
-
+    */
     if (!listId)
     {
         context.res = {
