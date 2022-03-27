@@ -5,7 +5,11 @@ const mongoose = require('mongoose')
 module.exports = async function (context, req) {
     const listId = (req.query.listid || (req.body && req.body.listid));
 
-    if (!listID)
+
+    if (!listId)
+        listId = {listID};
+
+    if (!listId)
     {
         context.res = {
             status:400,
@@ -13,6 +17,8 @@ module.exports = async function (context, req) {
         };
         return;
     }
+    
+    
 
     const connection = await mongoDB.connect();
     const list = await connection.model('lists',Schemas.list);
