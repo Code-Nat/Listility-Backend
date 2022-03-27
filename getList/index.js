@@ -1,13 +1,58 @@
+const mongoDB = require("../shared/mongo");
+const Schemas = require("../shared/DBSchemas");
+const mongoose = require("mongoose");
+
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
 
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+    const listID = (req.query.id || (req.body && req.body.id));
+    const searchTerm = (req.query.searchTerm || (req.body && req.body.searchTerm));
+    const sortBy = (req.query.sortBy || (req.body && req.body.sortBy));
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
+    const connection = await mongoDB.connect();
+    const list = await connection.model('lists',Schemas.list);
+
+    let sort = {dateCreated: -1};
+
+    if (sortBy=="titlefirst")
+        sort = {listTitle: 1}
+    else if (sortBy=="titlelast")
+        sort = {listTitle: -1}
+    else if (sortBy== "datefirst")
+        sort = {dateCreated: 1}
+    /*else if (sortBy== "date-")
+        sort = {dateCreated: -1}*/
+    userID = new mongoose.Types.ObjectId('623c79e8626d52f11c600b5c');
+
+    const listDTO = ['listTitle', 'dateCreated','owningUser','taskList', 'shares'];
+
+    try {
+        if (listID)
+            result = await list.find({
+                owningUser:userID,
+                _id:listID
+            }, 
+            listDTO,
+            {
+                sort:sort
+            });
+        else
+            result = await list.find({
+                owningUser:userID
+            }, 
+            listDTO,
+            {
+                sort:sort
+            });
+        context.res = {
+            status:200,
+            body: { lists:result }
+        };
+    }
+    catch (err)
+    {
+        context.res = {
+            status:400,
+            body: err
+        };
+    }
 }
