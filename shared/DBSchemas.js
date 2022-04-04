@@ -113,26 +113,32 @@ list.methods.addTask = function (task) {
 }
 
 list.methods.removeTask = function (taskID) {
-  let index = this.taskList.findIndex((item => item.id == taskID));
+  let index = this.taskList.findIndex((item => item._id == taskID));
 
   if (~index)
   {
     this.taskList.splice (index, 1);
     return this;
   }
-  return undefined;
+  throw Error("Task ID was not found");
+  //return undefined;
 }
 
 list.methods.updateTask = function (updatedTask)
 {
-  let index = this.taskList.findIndex((item => item.id == updatedTask.id));
+  let index = this.taskList.findIndex((item => item._id == updatedTask.id));
 
   if (~index)
   {
+    if (!updatedTask.taskTitle)
+      updatedTask.taskTitle = this.taskList[index].taskTitle;
+    if (!updatedTask.isChecked)
+      updatedTask.isChecked = this.taskList[index].isChecked;
+    updatedTask._id = this.taskList[index]._id;
     this.taskList[index] = updatedTask;
     return this;
   }
-  return undefined;
+  throw Error("TaskId was not found");
 }
 
 module.exports = {

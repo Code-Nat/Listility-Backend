@@ -6,9 +6,10 @@
       "direction": "in",
       "name": "req",
       "methods": [
+        "patch",
         "put"
       ],
-      "route": "v1/list/task"
+      "route": "v1/list/{listId}/task"
     },
     {
       "type": "http",
