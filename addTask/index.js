@@ -11,6 +11,7 @@ module.exports = async function (context, req) {
             status:400,
             body: "Missing taskTitle ID"
         };
+        return;
     }
     if (!isChecked)
     {
@@ -21,15 +22,9 @@ module.exports = async function (context, req) {
     const list = await connection.model('lists',Schemas.list);
 
     try {
-        result = await list.findById(context.bindingData.listId);
-
+        let result = await list.findById(context.bindingData.listId);
         if (!result)
-        {
-            context.res = {
-                status:400,
-                body: "The list reqrested dose not exsist"
-            };
-        }
+            throw Error("The list reqrested dose not exsist")
 
         result.addTask({
             taskTitle,
@@ -42,6 +37,7 @@ module.exports = async function (context, req) {
             status:201,
             body: result
         };
+        return;
     }
     catch (err)
     {
@@ -50,8 +46,6 @@ module.exports = async function (context, req) {
             status:400,
             body: err.message
         };
+        return;
     }
-
-    
-    
 }

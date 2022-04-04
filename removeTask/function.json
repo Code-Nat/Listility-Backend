@@ -8,7 +8,7 @@
       "methods": [
         "delete"
       ],
-      "route": "v1/list/task"
+      "route": "v1/list/{listId}/task"
     },
     {
       "type": "http",
