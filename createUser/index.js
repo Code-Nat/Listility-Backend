@@ -53,8 +53,6 @@ module.exports = async function (context, req) {
             password:password
         });
 
-        let UserDTO = toDTO(result);
-
         context.res = {
             status:201,
             body: toDTO(result)

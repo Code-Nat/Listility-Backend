@@ -49,7 +49,6 @@ const user = new mongoose.Schema({
 });
 
 user.pre('save', async function () {
-  // console.log(this.modifiedPaths())
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -96,7 +95,7 @@ const list = new mongoose.Schema({
     isChecked: Boolean
   }],
   shares: [{
-    userID: {
+    _id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users'
     },
@@ -139,6 +138,45 @@ list.methods.updateTask = function (updatedTask)
     return this;
   }
   throw Error("TaskId was not found");
+}
+
+list.methods.addShare = function (userShare) {
+  if (~this.shares.findIndex((item => {item._id == userShare.userId})))
+    throw Error ("User all ready has a share");
+  this.shares.push({
+    _id:userShare.userId,
+    isEdit:userShare.isEdit
+  });
+  return this;
+}
+
+list.methods.removeShare = function (userId) {
+  let index = this.shares.findIndex((item => item._id == userId));
+
+  if (~index)
+  {
+    this.shares.splice (index, 1);
+    return this;
+  }
+  throw Error("user ID was not found");
+  //return undefined;
+}
+
+list.methods.updateShare = function (updatedShare)
+{
+  let index = this.shares.findIndex((item => item._id == updatedShare.userId));
+
+  if (~index)
+  {
+    if (!updatedShare.isEdit)
+      updatedShare.isEdit = this.shares[index].isEdit;
+    this.shares[index] = {
+      _id:this.shares[index]._id, 
+      isEdit:updatedShare.isEdit
+    };
+    return this;
+  }
+  throw Error("UserId was not found in shared list");
 }
 
 module.exports = {
