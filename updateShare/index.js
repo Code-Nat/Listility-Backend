@@ -24,9 +24,9 @@ module.exports = async function (context, req) {
         if (!result)
             throw Error("The list reqrested dose not exsist");
 
-        result.updateTask({
+        result = result.updateShare({
             userId:userId,
-            isChecked:isEdit
+            isEdit:isEdit
         });
 
         result.save();
@@ -35,6 +35,7 @@ module.exports = async function (context, req) {
             status:202,
             body: result
         };
+        return;
     }
     catch (err)
     {
