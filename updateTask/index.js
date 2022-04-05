@@ -40,7 +40,7 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        console.log(err.message);
+        context.log(err.message);
         context.res = {
             status:400,
             body: err.message

@@ -21,7 +21,7 @@ module.exports = async function (context, req)
     const user = await connection.model('users',Schemas.user);
 
     const reply = await user.findById(id);
-    console.log(reply);
+    context.log(reply);
     if (reply == null)
     {
         const responseMessage = {status: 404};
