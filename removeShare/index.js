@@ -2,16 +2,14 @@ const mongoDB = require("../shared/mongo");
 const Schemas = require("../shared/DBSchemas");
 
 module.exports = async function (context, req) {
-    const taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
-    const isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
-    const taskId = (req.query.taskId || (req.body && req.body.taskId));
     const listId = context.bindingData.listId;
-    
-    if (!taskId)
+    const userId = (req.query.userId || (req.body && req.body.userId));
+
+    if (!userId)
     {
         context.res = {
             status:400,
-            body: "Missing taskId"
+            body: "Missing user ID"
         };
         return;
     }
@@ -20,23 +18,20 @@ module.exports = async function (context, req) {
     const list = await connection.model('lists',Schemas.list);
 
     try {
-        result = await list.findById(listId);
+        let result = await list.findById(listId);
 
         if (!result)
-            throw Error("The list reqrested dose not exsist");
+            throw Error ("The list reqrested dose not exsist");
 
-        result.updateTask({
-            taskTitle:taskTitle,
-            isChecked:isChecked,
-            id:taskId
-        });
+        result.removeShare(userId);
 
         result.save();
 
         context.res = {
-            status:200,
+            status:202,
             body: result
         };
+        return;
     }
     catch (err)
     {
@@ -45,6 +40,6 @@ module.exports = async function (context, req) {
             status:400,
             body: err.message
         };
+        return;
     }
-
 }

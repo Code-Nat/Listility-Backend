@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "put"
+        "patch"
       ],
       "route": "v1/lists"
     },

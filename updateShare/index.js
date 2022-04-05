@@ -2,16 +2,15 @@ const mongoDB = require("../shared/mongo");
 const Schemas = require("../shared/DBSchemas");
 
 module.exports = async function (context, req) {
-    const taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
-    const isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
-    const taskId = (req.query.taskId || (req.body && req.body.taskId));
+    const userId = (req.query.userId || (req.body && req.body.userId));
+    const isEdit = (req.query.isEdit || (req.body && req.body.isEdit));
     const listId = context.bindingData.listId;
     
-    if (!taskId)
+    if (!userId)
     {
         context.res = {
             status:400,
-            body: "Missing taskId"
+            body: "Missing user Id"
         };
         return;
     }
@@ -26,15 +25,14 @@ module.exports = async function (context, req) {
             throw Error("The list reqrested dose not exsist");
 
         result.updateTask({
-            taskTitle:taskTitle,
-            isChecked:isChecked,
-            id:taskId
+            userId:userId,
+            isChecked:isEdit
         });
 
         result.save();
 
         context.res = {
-            status:200,
+            status:202,
             body: result
         };
     }
@@ -46,5 +44,4 @@ module.exports = async function (context, req) {
             body: err.message
         };
     }
-
 }

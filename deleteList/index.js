@@ -28,10 +28,9 @@ module.exports = async function (context, req) {
         {
             context.res = {
                 // status: 200, /* Defaults to 200 */
-                status:404,
+                status:400,
                 body: err
             };
-            //console.log(err);
         }
         else
         {

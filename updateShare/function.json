@@ -9,7 +9,7 @@
         "patch",
         "put"
       ],
-      "route": "v1/list/{listId}/task"
+      "route": "v1/list/{listId}/share"
     },
     {
       "type": "http",
