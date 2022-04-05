@@ -3,7 +3,7 @@ const Schemas = require("../shared/DBSchemas");
 
 module.exports = async function (context, req) {
     const userId = (req.query.userId || (req.body && req.body.userId));
-    const isChecked = (req.query.isEdit || (req.body && req.body.isEdit));
+    const isEdit = (req.query.isEdit || (req.body && req.body.isEdit));
     const listId = context.bindingData.listId;
     
     if (!userId)
@@ -26,13 +26,13 @@ module.exports = async function (context, req) {
 
         result.updateTask({
             userId:userId,
-            isChecked:isisEdit
+            isChecked:isEdit
         });
 
         result.save();
 
         context.res = {
-            status:200,
+            status:202,
             body: result
         };
     }
