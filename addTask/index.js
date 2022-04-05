@@ -2,6 +2,7 @@ const mongoDB = require("../shared/mongo");
 const Schemas = require("../shared/DBSchemas");
 
 module.exports = async function (context, req) {
+    const listId = context.bindingData.listId;
     const taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
     let isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
 
@@ -22,7 +23,7 @@ module.exports = async function (context, req) {
     const list = await connection.model('lists',Schemas.list);
 
     try {
-        let result = await list.findById(context.bindingData.listId);
+        let result = await list.findById(listId);
         if (!result)
             throw Error("The list reqrested dose not exsist")
 
@@ -41,7 +42,7 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        console.log(err.message);
+        context.log(err.message);
         context.res = {
             status:400,
             body: err.message
