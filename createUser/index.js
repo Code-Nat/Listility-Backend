@@ -1,7 +1,5 @@
 const mongoDB = require("../shared/mongo");
 const Schemas = require("../shared/DBSchemas");
-const mongoose = require('mongoose');
-const userDTO = require("../shared/userDTO");
 const toDTO = require("../shared/DTO/userDTO");
 
 module.exports = async function (context, req) {
