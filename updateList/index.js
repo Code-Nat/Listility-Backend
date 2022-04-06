@@ -3,7 +3,7 @@ const Schemas = require("../shared/DBSchemas");
 const mongoose = require("mongoose");
 
 module.exports = async function (context, req) {
-    const listID = (req.query.id || (req.body && req.body.id));
+    const listID = (req.query.listId || (req.body && req.body.listId));
     const listTitle = (req.query.listTitle || (req.body && req.body.listTitle));
 
     const connection = await mongoDB.connect();
