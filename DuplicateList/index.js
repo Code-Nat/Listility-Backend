@@ -25,10 +25,11 @@ module.exports = async function (context, req) {
     try {
         let result = await list.findOne({_id:list_ID,owningUser:userID});
 
-        context.log (result);
+        if (!result)
+            throw Error (`No list with such id was found`);
 
         result = await list.create({
-            listTitle: result.listTitle, 
+            listTitle: (`${result.listTitle} (Duplicate)`),
             dateCreated:new Date(), 
             owningUser:userID,
             taskList:result.taskList
@@ -41,10 +42,10 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (`error duplicating list: with listID=${listID} and listTitle=${listTitle} the error: ${err.message}`);
+        context.log (`error duplicating list: with listID=${listID} the error: ${err.message}`);
         context.res = {
             status:400,
-            body: err
+            body: err.message
         };
         return;
     }

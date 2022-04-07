@@ -78,7 +78,7 @@ const list = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide title'],
     minlength: 1,
-    maxlength: 20,
+    maxlength: 40,
     trim: true
   },
   dateCreated: {
@@ -95,7 +95,7 @@ const list = new mongoose.Schema({
     isChecked: Boolean
   }],
   shares: [{
-    _id: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users'
     },
@@ -159,21 +159,22 @@ list.methods.removeShare = function (userId) {
     return this;
   }
   throw Error("user ID was not found");
-  //return undefined;
 }
 
 list.methods.updateShare = function (updatedShare)
 {
   let index = this.shares.findIndex((item => item._id == updatedShare.userId));
-
+  
   if (~index)
   {
     if (!updatedShare.isEdit)
       updatedShare.isEdit = this.shares[index].isEdit;
     this.shares[index] = {
-      _id:this.shares[index]._id, 
+      _id:this.shares[index]._id,
       isEdit:updatedShare.isEdit
     };
+    let users = this.populate(`shares[${index}].userId`);
+    console.log(users);
     return this;
   }
   throw Error("UserId was not found in shared list");
