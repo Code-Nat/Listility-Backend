@@ -1,7 +1,26 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
+const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
+    let authToken;
+    try {
+        authToken = await auth (context);
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status: 401,
+            body: {
+                message:err.message
+            }
+        }
+        return;
+    }
+    //Auth passed fill ID contiue code
+    const userID = await authToken.userId;
+
     const listId = context.bindingData.listId;
     const taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
     let isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
@@ -19,20 +38,33 @@ module.exports = async function (context, req) {
         isChecked = false;
     }
 
-    const connection = await mongoDB.connect();
-    const list = await connection.model('lists',Schemas.list);
+    const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        let result = await list.findById(listId);
+        let result = await DB.list.findOne(
+            {
+                _id:listId, 
+                owningUser:userID
+            })
         if (!result)
-            throw Error("The list reqrested dose not exsist")
+        {
+            result = await DB.list.findOne(
+            {
+                _id:listId,
+                shares:{_id:userID, isEdit:true}
+            })
+
+            
+            if (!result)
+                throw Error("The list reqrested dose not exsist");
+        }
 
         result.addTask({
             taskTitle,
             isChecked
         });
 
-        result.save();
+        await result.save();
 
         context.res = {
             status:201,

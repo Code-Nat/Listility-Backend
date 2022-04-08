@@ -1,8 +1,25 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
-const mongoose = require('mongoose')
+const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    let authToken;
+    try {
+        authToken = await auth (context);
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status: 401,
+            body: {
+                message:err.message
+            }
+        }
+        return;
+    }
+    //Auth passed fill ID contiue code
+    const userID = await authToken.userId;
+
     const listId = (req.query.listid || (req.body && req.body.listid));
 
 
@@ -17,29 +34,35 @@ module.exports = async function (context, req) {
         };
         return;
     }
-    
-    
 
-    const connection = await mongoDB.connect();
-    const list = await connection.model('lists',Schemas.list);
 
-   /* let result = */await list.findByIdAndDelete(mongoose.Types.ObjectId(listId), err => {
-        if(err)
+    const DB = await mongoDB.models();  //Connect to DB and get models
+
+    try {
+        const result = await DB.list.findOneAndDelete({
+            _id:listId,
+            owningUser:userID
+        });
+
+        if (!result)
         {
             context.res = {
-                // status: 200, /* Defaults to 200 */
                 status:400,
-                body: err
+                body: "No list with this ID was found "
             };
+            return;
         }
-        else
-        {
-            context.res = {
-                // status: 200, /* Defaults to 200 */
-                status:204,
-                body: ""
-            };
-            //context.log("Successful deletion");
+
+        context.res = {
+            status:204,
+            body: ""
+        };
+    }
+    catch (err) {
+        context.log (`error to delete list: ${err}`)
+        context.res = {
+            status: 500,
+            body: err.message
         }
-      }).catch (err => { context.log (err); });
+    }
 }

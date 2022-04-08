@@ -39,7 +39,7 @@ module.exports = async function (context, req) {
     const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        result = await list.create({
+        result = await DB.list.create({
             listTitle: title, 
             dateCreated:new Date(), 
             owningUser:userID
@@ -54,7 +54,7 @@ module.exports = async function (context, req) {
     {
         context.res = {
             status:400,
-            body: err
+            body: err.message
         };
     }
 }
