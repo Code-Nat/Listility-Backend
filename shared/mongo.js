@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = require('../shared/DBSchemas')
 
  const config = {
    uri: process.env["DBAddress"],
@@ -7,7 +8,8 @@ const mongoose = require('mongoose');
  
  let conn = null;
  
- exports.connect = async function() {
+ //exports.
+ const connect = async function() {
    if (conn == null) {
      conn = mongoose.connect(config.uri, {
        serverSelectionTimeoutMS: 5000
@@ -20,3 +22,10 @@ const mongoose = require('mongoose');
  
    return conn;
  };
+
+ exports.models = async () => {
+    const connection = await connect();
+    const user = await connection.model ('user', Schema.user);
+    const list = await connection.model('list', Schema.list);
+    return {user, list};
+}

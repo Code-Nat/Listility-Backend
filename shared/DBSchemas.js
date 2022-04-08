@@ -87,7 +87,7 @@ const list = new mongoose.Schema({
   },
   owningUser: {
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'users'
+    ref: 'user'
   },
   taskList: [{
     id:String,
@@ -95,9 +95,9 @@ const list = new mongoose.Schema({
     isChecked: Boolean
   }],
   shares: [{
-    userId: {
+    _id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'users'
+      ref: 'user'
     },
     isEdit: {
       type: Boolean,
@@ -182,5 +182,5 @@ list.methods.updateShare = function (updatedShare)
 
 module.exports = {
     user: user,
-    list: list
+    list: list,
 }

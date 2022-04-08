@@ -1,24 +1,37 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
-const mongoose = require("mongoose");
+const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
+    let authToken;
+    try {
+        authToken = await auth (context);
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status: 401,
+            body: {
+                message:err.message
+            }
+        }
+        return;
+    }
+    //Auth passed fill ID contiue code
+    const userID = await authToken.userId;
+
     const listID = (req.query.listId || (req.body && req.body.listId));
     const listTitle = (req.query.listTitle || (req.body && req.body.listTitle));
 
-    const connection = await mongoDB.connect();
-    const list = await connection.model('lists',Schemas.list);
-
-    userID = new mongoose.Types.ObjectId('623c79e8626d52f11c600b5c');
-
-    const list_ID = new mongoose.Types.ObjectId(listID);
+    const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        result = await list.findOneAndUpdate({_id:list_ID,owningUser:userID},{
+        result = await DB.list.findOneAndUpdate({_id:listID,owningUser:userID},{
             listTitle:listTitle
         });
 
-        result = await list.find({_id:list_ID,owningUser:userID});
+        result = await DB.list.find({_id:listID,owningUser:userID});
 
         context.res = {
             status:200,
@@ -30,7 +43,7 @@ module.exports = async function (context, req) {
         context.log (`error updating list: with listID=${listID} and listTitle=${listTitle} the error: ${err.message}`);
         context.res = {
             status:400,
-            body: err
+            body: err.message
         };
         return;
     }
