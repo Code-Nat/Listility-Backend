@@ -1,10 +1,27 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
-const mongoose = require("mongoose");
+const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
+    let authToken;
+    try {
+        authToken = await auth (context);
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status: 401,
+            body: {
+                message:err.message
+            }
+        }
+        return;
+    }
+    //Auth passed fill ID contiue code
+    const userID = await authToken.userId;
+
     const listID = (req.query.listId || (req.body && req.body.listId));
-    //const listTitle = (req.query.listTitle || (req.body && req.body.listTitle));
 
     if (!listID)
     {
@@ -15,22 +32,22 @@ module.exports = async function (context, req) {
         return;
     }
 
-    userID = new mongoose.Types.ObjectId('623c79e8626d52f11c600b5c');
+    //const list_ID = new mongoose.Types.ObjectId(listID);
 
-    const list_ID = new mongoose.Types.ObjectId(listID);
-
-    const connection = await mongoDB.connect();
-    const list = await connection.model('lists',Schemas.list);
+    const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        let result = await list.findOne({_id:list_ID,owningUser:userID});
+        let result = await DB.list.findOne({
+            _id:listID,
+            owningUser:userID
+        });
 
         if (!result)
             throw Error (`No list with such id was found`);
 
-        result = await list.create({
-            listTitle: (`${result.listTitle} (Duplicate)`),
-            dateCreated:new Date(), 
+        result = await DB.list.create({
+            listTitle: (`${result.listTitle} (Copy)`),
+            dateCreated:new Date(),
             owningUser:userID,
             taskList:result.taskList
         });
