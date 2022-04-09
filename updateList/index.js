@@ -27,9 +27,11 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
+        context.log (`error updating list: with listID=${listID} and listTitle=${listTitle} the error: ${err.message}`);
         context.res = {
             status:400,
             body: err
         };
+        return;
     }
 }
