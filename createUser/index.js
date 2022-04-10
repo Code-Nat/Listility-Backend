@@ -3,7 +3,6 @@ const toDTO = require("../shared/DTO/userDTO");
 
 module.exports = async function (context, req) {
     const name = (req.query.name || (req.body && req.body.name));
-    const lastName = (req.query.lastname || (req.body && req.body.lastname));
     const email = (req.query.email || (req.body && req.body.email));
     const password = (req.query.password || (req.body && req.body.password));
 
@@ -34,7 +33,6 @@ module.exports = async function (context, req) {
     try {
         result = await DB.user.create({
             name: name,
-            lastName:lastName,
             email:email,
             password:password,
             emailConfirm:false
