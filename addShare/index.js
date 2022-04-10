@@ -48,7 +48,7 @@ module.exports = async function (context, req) {
         if (!result)
             throw Error("The list reqrested dose not exsist");
         
-        let user = await DB.user.findOne({email:userEmail});
+        const user = await DB.user.findOne({email:userEmail});
 
         if (!user)
             throw Error("The user with such email dose not exsist")
