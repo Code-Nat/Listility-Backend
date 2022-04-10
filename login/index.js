@@ -1,13 +1,37 @@
+const mongoDB = require("../shared/mongo");
+
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+    try
+    {
+        const { email, password } = req.body
+        if (!email || !password) {
+            throw new Error('Please provide all values')
+        }
 
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+        const DB = await mongoDB.models();  //Connect to DB and get models
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
+        const user = await DB.user.findOne({ email }).select('+password')
+        if (!user) {
+            throw new Error('Invalid Credentials')
+        }
+
+        const isPasswordCorrect = await user.comparePassword(password)
+        if (!isPasswordCorrect) {
+            throw new Error('Invalid Credentials')
+        }
+        const token = user.createJWT()
+        user.password = undefined
+        context.res = {
+            status:200,
+            body:{ user, token }
+        }
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status:400,
+            body:{msg:err.message}
+        }
+    }
 }
