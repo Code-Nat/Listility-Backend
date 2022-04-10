@@ -31,6 +31,10 @@ module.exports = async function (context, req) {
     const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
+        const userAlreadyExists = await DB.user.findOne({ email })
+        if (userAlreadyExists) {
+            throw Error('Email already in use');
+        }
         result = await DB.user.create({
             name: name,
             email:email,
