@@ -45,13 +45,18 @@ module.exports = async function (context, req) {
         if (!result)
             throw Error("The list reqrested dose not exsist");
 
-        result.updateTask({
+        if (!isChecked)
+            isChecked = result.isChecked;
+        if (!taskTitle)
+            taskTitle = result.taskTitle;
+
+        await result.updateTask({
             taskTitle:taskTitle,
             isChecked:isChecked,
             _id:taskId
         });
 
-        result.save();
+        await result.save();
 
         context.res = {
             status:200,
