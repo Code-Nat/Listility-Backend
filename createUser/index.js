@@ -37,6 +37,8 @@ module.exports = async function (context, req) {
             throw Error('Email already in use');
         }
 
+        const verifyID = VerifyEmailStarter(context, res)
+
         user = await DB.user.create({
             name: name,
             email:email,

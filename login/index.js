@@ -17,8 +17,22 @@ module.exports = async function (context, req) {
 
         const isPasswordCorrect = await user.comparePassword(password)
         if (!isPasswordCorrect) {
-            throw new Error('Invalid Credentials')
+            throw new Error('Invalid Credentials');
         }
+        if (!emailVerify)
+        {
+            context.log (`User ${email} try to login before email verfiy`);
+            context.res = {
+                status:406,
+                body: {
+                    msg:"You have to verify your email before login",
+                    error:"User email yet to verify"
+                }
+            }
+            return;
+            throw new Error ('email not verifyed');
+        }
+        
         const token = user.createJWT()
         user.password = undefined
         context.res = {
