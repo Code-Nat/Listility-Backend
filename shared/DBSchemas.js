@@ -11,12 +11,6 @@ const user = new mongoose.Schema({
       maxlength: 20,
       trim: true,
     },
-    lastName: {
-      type: String,
-      trim: true,
-      maxlength: 20,
-      default: 'lastName',
-    },
     email: {
       type: String,
       required: [true, 'Please provide email'],
@@ -87,7 +81,7 @@ const list = new mongoose.Schema({
   },
   owningUser: {
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'users'
+    ref: 'user'
   },
   taskList: [{
     id:String,
@@ -95,9 +89,9 @@ const list = new mongoose.Schema({
     isChecked: Boolean
   }],
   shares: [{
-    userId: {
+    _id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'users'
+      ref: 'user'
     },
     isEdit: {
       type: Boolean,
@@ -125,13 +119,13 @@ list.methods.removeTask = function (taskID) {
 
 list.methods.updateTask = function (updatedTask)
 {
-  let index = this.taskList.findIndex((item => item._id == updatedTask.id));
+  let index = this.taskList.findIndex((item => item._id == updatedTask._id));
 
   if (~index)
   {
     if (!updatedTask.taskTitle)
       updatedTask.taskTitle = this.taskList[index].taskTitle;
-    if (!updatedTask.isChecked)
+    if (updatedTask.isChecked == null)
       updatedTask.isChecked = this.taskList[index].isChecked;
     updatedTask._id = this.taskList[index]._id;
     this.taskList[index] = updatedTask;
@@ -164,23 +158,21 @@ list.methods.removeShare = function (userId) {
 list.methods.updateShare = function (updatedShare)
 {
   let index = this.shares.findIndex((item => item._id == updatedShare.userId));
-  
-  if (~index)
-  {
-    if (!updatedShare.isEdit)
-      updatedShare.isEdit = this.shares[index].isEdit;
-    this.shares[index] = {
-      _id:this.shares[index]._id,
-      isEdit:updatedShare.isEdit
-    };
-    let users = this.populate(`shares[${index}].userId`);
-    console.log(users);
-    return this;
-  }
-  throw Error("UserId was not found in shared list");
+
+  if (!(~index))
+    throw Error("UserId was not found in shared list");
+
+  if (!updatedShare.isEdit)
+    updatedShare.isEdit = this.shares[index].isEdit;
+    
+  this.shares[index] = {
+    _id:this.shares[index]._id,
+    isEdit:updatedShare.isEdit
+  };
+  return this;
 }
 
 module.exports = {
     user: user,
-    list: list
+    list: list,
 }

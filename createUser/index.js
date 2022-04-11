@@ -1,59 +1,62 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
 const toDTO = require("../shared/DTO/userDTO");
+const VerifyEmailStarter = require("../VerifyEmailStarter");
 
 module.exports = async function (context, req) {
     const name = (req.query.name || (req.body && req.body.name));
-    const lastName = (req.query.lastname || (req.body && req.body.lastname));
     const email = (req.query.email || (req.body && req.body.email));
     const password = (req.query.password || (req.body && req.body.password));
 
     let result = "";
-    let issue = false;
 
     //verify before creating user
     if (!name)
-    {
-        reply += "name is missing\n";
-        issue = true;
-    }
+        result += "name is missing\n";
     if (!email)
-    {
-        reply += "email is missing\n";
-        issue = true;
-    }
+        result += "email is missing\n";
     if (!password)
-    {
-        reply += "password is missing\n";
-        issue = true;
-    }
+        result += "password is missing\n";
 
-    if (issue)
+    if (result)
     {
         const responseMessage = {
             status:400,
             body: {
-                reason: reply
+                reason: result
             }
         };
         context.res = responseMessage;
         return;
     }
 
-    const connection = await mongoDB.connect();
-    const user = await connection.model('users',Schemas.user);
+    const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        result = await user.create({
+        let user = await DB.user.findOne({ email })
+        if (result) {
+            throw Error('Email already in use');
+        }
+
+        user = await DB.user.create({
             name: name,
-            lastName:lastName,
             email:email,
-            password:password
+            password:password,
+            emailConfirm:verifyID
         });
+
+        
+
+        const token = user.createJWT();
 
         context.res = {
             status:201,
-            body: toDTO(result)
+            body: {
+                user: {
+                    email: user.email,
+                    name: user.name,
+                },
+                token
+            }
         };
     }
     catch (err)

@@ -1,8 +1,26 @@
 const mongoDB = require("../shared/mongo");
-const Schemas = require("../shared/DBSchemas");
-const mongoose = require("mongoose");
+const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
+    let authToken;
+    try {
+        authToken = await auth (context);
+    }
+    catch (err)
+    {
+        context.log (err);
+        context.res = {
+            status: 401,
+            body: {
+                message:err.message
+            }
+        }
+        return;
+    }
+    //Auth passed fill ID contiue code
+    const userID = await authToken.userId;
+
     const title = (req.query.listTitle || (req.body && req.body.listTitle));
 
     //check if ID exsist before procceding
@@ -18,12 +36,10 @@ module.exports = async function (context, req) {
         return;
     }
 
-    const connection = await mongoDB.connect();
-    const list = await connection.model('lists',Schemas.list);
+    const DB = await mongoDB.models();  //Connect to DB and get models
 
-    let userID = new mongoose.Types.ObjectId('623c79e8626d52f11c600b5c');
     try {
-        result = await list.create({
+        result = await DB.list.create({
             listTitle: title, 
             dateCreated:new Date(), 
             owningUser:userID
@@ -38,7 +54,7 @@ module.exports = async function (context, req) {
     {
         context.res = {
             status:400,
-            body: err
+            body: err.message
         };
     }
 }
