@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -21,29 +22,39 @@ module.exports = async function (context, req) {
     //Auth passed fill ID contiue code
     const userID = await authToken.userId;
 
-    const listID = (req.query.listId || (req.body && req.body.listId));
+    const listId = (req.query.listId || (req.body && req.body.listId));
 
-    if (!listID)
+    if (!listId)
     {
         context.res = {
             status:400,
-            body: "Missing list ID"
+            body: {
+                msg:"Missing list ID",
+                err:"Missing list ID"
+            }
         };
         return;
     }
 
-    //const list_ID = new mongoose.Types.ObjectId(listID);
+    //const list_ID = new mongoose.Types.ObjectId(listId);
 
     const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
         let result = await DB.list.findOne({
-            _id:listID,
+            _id:listId,
             owningUser:userID
         });
 
         if (!result)
-            throw Error (`No list with such id was found`);
+        {
+            context.log.info (`DupList failed, no listId for ${listId} was found`)
+            context.res = {
+                err:`No list with id:${listId} was found`,
+                msg:`There was an error with the reqrest`
+            }
+            return;
+        }
 
         result = await DB.list.create({
             listTitle: (`${result.listTitle} (Copy)`),
@@ -52,6 +63,8 @@ module.exports = async function (context, req) {
             taskList:result.taskList
         });
 
+        context.log.info (`List ${listId} as duplicated to ${result._id}`);
+
         context.res = {
             status:200,
             body: result
@@ -59,10 +72,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (`error duplicating list: with listID=${listID} the error: ${err.message}`);
+        context.log (`error duplicating list: with listId=${listId} the error: ${err.message}`);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:`Failed to duplicate list`
+            }
         };
         return;
     }

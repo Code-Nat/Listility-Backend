@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -27,7 +28,8 @@ module.exports = async function (context, req) {
         const responseMessage = {
             status:400,
             body: {
-                reason: "missing ID"
+                err: "missing ID",
+                msg:`the reqrest missing parmters`
             }
         };
         context.res = responseMessage;
@@ -42,7 +44,10 @@ module.exports = async function (context, req) {
         {
             context.res = {
                 status: 400,
-                body:"User with the ID was not found"
+                body:{
+                    msg:"User with the ID was not found",
+                    err:`no user with id ${userId} was found`
+                }
             };
             return;
         }
@@ -55,7 +60,10 @@ module.exports = async function (context, req) {
         context.log (`Error getting user with ID ${id} from user ${userID} with error: ${err}`);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:"There was an error with the reqrest"
+            }
         };
     }
 }

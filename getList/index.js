@@ -5,22 +5,22 @@ const auth = require("../shared/auth");
  * Function gets a single list out of the DB by its ID
  * 
  * @Parm list the list mongoose object
- * @Parm listID an objectID/String of the list ID
+ * @Parm listId an objectID/String of the list ID
  * @Parm userID the ID of the user reqresting the list
  * @Parm listDTO the returned list values (cleaning up)
  * @Parm userDTO the returned user values (cleaning up)
  * @Parm searchTerm unused
  */
-function getListByListId(list, listID, userID, sort, listDTO, userDTO, searchTerm)
+function getListBylistId(list, listId, userID, sort, listDTO, userDTO, searchTerm)
 {
     return list.find({$or:[
         {
             owningUser:userID,
-            _id:listID
+            _id:listId
         },
         {
             "shares._id":userID,
-            _id:listID
+            _id:listId
         }
     ]},
     listDTO,
@@ -59,7 +59,6 @@ function getLists (list, userID, sort, listDTO, userDTO, searchTerm)
 }
 
 module.exports = async function (context, req) {
-
     //Check auth
     let authToken;
     try {
@@ -67,11 +66,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -80,7 +80,7 @@ module.exports = async function (context, req) {
     const userID = await authToken.userId;
 
     //Popilate options
-    const listID = (req.query.listId || (req.body && req.body.listId));
+    const listId = (req.query.listId || (req.body && req.body.listId));
     const searchTerm = (req.query.searchTerm || (req.body && req.body.searchTerm));
     const sortBy = (req.query.sortBy || (req.body && req.body.sortBy));
     //End popilating
@@ -101,11 +101,13 @@ module.exports = async function (context, req) {
     const DB = await mongoDB.models();  //Connect to DB and get models
 
     try {
-        if (listID) //Check if a listID exsist if so search for only that list
-            result = await getListByListId(DB.list, listID, userID, sort, listDTO, userDTO, searchTerm);
-        else    //If no listID given return all lists
+        if (listId) //Check if a listId exsist if so search for only that list
+            result = await getListBylistId(DB.list, listId, userID, sort, listDTO, userDTO, searchTerm);
+        else    //If no listId given return all lists
             result = await getLists (DB.list, userID, sort, listDTO, userDTO, searchTerm);
         
+        context.log.info (`user ${userID} run get list`);
+
         context.res = { //Return result
             status:200,
             body: { lists:result }
@@ -113,10 +115,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (`failed to get list on reqrest ${context.id} as of reason ${err.message}`);
+        context.log.warn (`failed to get list on reqrest ${context.id} as of reason ${err.message}`);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:"There was an error on the reqrest"
+            }
         };
     }
 }

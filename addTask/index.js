@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -27,9 +28,13 @@ module.exports = async function (context, req) {
 
     if (!taskTitle)
     {
+        context.log.info ("Missing taskTitle for a new task opration canceled");
         context.res = {
             status:400,
-            body: "Missing taskTitle ID"
+            body: {
+                err:"Missing taskTitle ID",
+                msg:"Missing a title for the new task"
+            }
         };
         return;
     }
@@ -56,7 +61,17 @@ module.exports = async function (context, req) {
 
             
             if (!result)
-                throw Error("The list reqrested dose not exsist");
+            {
+                context.log.info ("addTask no list found")
+                context.res = {
+                    status: 400,
+                    body: {
+                        err:`The list with id ${listId} was not found`,
+                        msg:"Sorry there was an error finding the list"
+                    }
+                }
+                return;
+            }
         }
 
         result.addTask({
@@ -74,10 +89,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log(err.message);
+        context.log.warn(err);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                msg:"There was an error with the reqrest",
+                err:err.message
+            }
         };
         return;
     }

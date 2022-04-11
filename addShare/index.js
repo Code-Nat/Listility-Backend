@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -27,9 +28,14 @@ module.exports = async function (context, req) {
 
     if (!userEmail)
     {
+        context.log.info ("add share missing email to share with");
         context.res = {
             status:400,
-            body: "Missing user email"
+            body: {
+                msg:"Missing user email",
+                err:"And error reqrest missing paramters"
+            }
+
         };
         return;
     }
@@ -60,6 +66,8 @@ module.exports = async function (context, req) {
 
         result.save();
 
+        context.log.info (`New share added to list ${listId} for user ${user._id}`);
+
         context.res = {
             status:201,
             body: result
@@ -68,10 +76,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log(err);
+        context.log.warn(err);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:"There was an error on creating share"
+            } 
         };
         return;
     }

@@ -2,17 +2,19 @@ const mongoDB = require("../shared/mongo");
 const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
     let authToken;
     try {
         authToken = await auth (context);
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -25,9 +27,13 @@ module.exports = async function (context, req) {
 
     if (!userId)
     {
+        context.log.info (`Failed: removeShare reqrest from user ${userID} sent missing userId`);
         context.res = {
             status:400,
-            body: "Missing user ID"
+            body: {
+                err:"Missing user ID",
+                msg:"The reqrest was missing parmaters"
+            }
         };
         return;
     }
@@ -41,11 +47,23 @@ module.exports = async function (context, req) {
         });
 
         if (!result)
-            throw Error ("The list reqrested dose not exsist");
+        {
+            context.log.info(`reqrest from user ${userID} failed on not finding list`);
+            context.res = {
+                status:403,
+                body:{
+                    err:`The list ${listId} reqrested was not found`,
+                    msg:`The list reqrested was not found`
+                }
+            }
+            return;
+        }
 
         result.removeShare(userId);
 
         result.save();
+
+        context.log.info (`remove share for user ${userId} by user ${userID} in list ${listId}`);
 
         context.res = {
             status:202,
@@ -55,10 +73,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log(err.message);
+        context.log.warn(err.message);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:"An error has ocured"
+            }
         };
         return;
     }

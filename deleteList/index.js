@@ -2,17 +2,19 @@ const mongoDB = require("../shared/mongo");
 const auth = require("../shared/auth");
 
 module.exports = async function (context, req) {
+    //Check auth
     let authToken;
     try {
         authToken = await auth (context);
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -22,15 +24,15 @@ module.exports = async function (context, req) {
 
     const listId = (req.query.listid || (req.body && req.body.listid));
 
-
-    /*if (!listId)
-        listId = {listID};
-    */
     if (!listId)
     {
+        context.log ("Delete list failed on missing list ID");
         context.res = {
             status:400,
-            body: "Missing list ID"
+            body: {
+                err:"Missing list ID",
+                msg:"Missing list ID"
+            }
         };
         return;
     }
@@ -46,12 +48,18 @@ module.exports = async function (context, req) {
 
         if (!result)
         {
+            context.log ()
             context.res = {
                 status:400,
-                body: "No list with this ID was found "
+                body: {
+                    err:`No list with the ID ${listId} was found`,
+                    msg:"No list with this ID was found "
+                }
             };
             return;
         }
+
+        context.log.info (`list deleted: ${result}`);
 
         context.res = {
             status:204,
@@ -62,7 +70,10 @@ module.exports = async function (context, req) {
         context.log (`error to delete list: ${err}`)
         context.res = {
             status: 500,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:`Sorry something went wrong on the server side`
+            }
         }
     }
 }

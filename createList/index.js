@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -26,10 +27,12 @@ module.exports = async function (context, req) {
     //check if ID exsist before procceding
     if (!title)
     {
+        context.log.info("createList call missing title");
         const responseMessage = {
             status:400,
             body: {
-                reason: "missing title"
+                err:"missing title for list",
+                msg:"missing title for list"
             }
         };
         context.res = responseMessage;
@@ -45,6 +48,8 @@ module.exports = async function (context, req) {
             owningUser:userID
         });
 
+        context.log.info (`new list ${listId} created for user ${userID}`)
+
         context.res = {
             status:201,
             body: result
@@ -52,10 +57,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
+        context.log.warn (err)
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:`There was an error in creating the list`
+            }
         };
     }
 }
-

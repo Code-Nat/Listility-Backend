@@ -9,11 +9,12 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log (err);
+        context.log.warn (err);
         context.res = {
             status: 401,
             body: {
-                message:err.message
+                err:err.response,
+                msg:`Error with Auth`
             }
         }
         return;
@@ -26,9 +27,13 @@ module.exports = async function (context, req) {
 
     if (!taskId)
     {
+        context.log.info (`failed: reqrest remove task from user ${userID} to remove task ${taskId} from list ${listId}`);
         context.res = {
             status:400,
-            body: "Missing taskId"
+            body: {
+                err:"Missing taskId",
+                msg:"The reqrest was missing parmters"
+            }
         };
         return;
     }
@@ -48,7 +53,17 @@ module.exports = async function (context, req) {
                 "shares._id":userID
             });
             if (!result)
-                throw Error ("The list reqrested dose not exsist");
+            {
+                context.log.info(`Failed remove task: user ${userID} reqrested remove task ${taskId} from ${listId}`);
+                context.res = {
+                    status:403,
+                    body:{
+                        err:`The list reqrested was not found`,
+                        msg:`The list reqrested was not found`
+                    }
+                }
+                return;
+            }
         }
 
         result.removeTask(taskId);

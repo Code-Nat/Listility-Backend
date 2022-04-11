@@ -19,13 +19,14 @@ module.exports = async function (context, req) {
 
     if (result)
     {
-        const responseMessage = {
+        context.log.info(`user registur error: ${result}`);
+        context.res = {
             status:400,
             body: {
-                reason: result
+                msg: result,
+                err: result
             }
         };
-        context.res = responseMessage;
         return;
     }
 
@@ -61,10 +62,13 @@ module.exports = async function (context, req) {
     }
     catch (err)
     {
-        context.log(err.message);
+        context.log.warn(err);
         context.res = {
             status:400,
-            body: err.message
+            body: {
+                err:err.message,
+                msg:`user was not created on error: ${err.message}`
+            }
         };
     }
 }
