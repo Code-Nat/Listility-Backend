@@ -45,7 +45,7 @@ module.exports = async function (context, req) {
         if (!result)
             throw Error("The list reqrested dose not exsist");
 
-        if (!(true.toString.equals(isChecked) || false.toString.equals(isChecked)))
+        if (!(true.toString().equals(isChecked) || false.toString().equals(isChecked)))
             isChecked = result.isChecked;
         if (!taskTitle)
             taskTitle = result.taskTitle;
