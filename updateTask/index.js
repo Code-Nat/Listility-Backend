@@ -20,8 +20,8 @@ module.exports = async function (context, req) {
     //Auth passed fill ID contiue code
     const userID = await authToken.userId;
 
-    const taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
-    const isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
+    let taskTitle = (req.query.taskTitle || (req.body && req.body.taskTitle));
+    let isChecked = (req.query.isChecked || (req.body && req.body.isChecked));
     const taskId = (req.query.taskId || (req.body && req.body.taskId));
     const listId = context.bindingData.listId;
     
