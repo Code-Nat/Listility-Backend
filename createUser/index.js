@@ -1,5 +1,6 @@
 const mongoDB = require("../shared/mongo");
 const toDTO = require("../shared/DTO/userDTO");
+const VerifyEmailStarter = require("../VerifyEmailStarter");
 
 module.exports = async function (context, req) {
     const name = (req.query.name || (req.body && req.body.name));
@@ -40,8 +41,10 @@ module.exports = async function (context, req) {
             name: name,
             email:email,
             password:password,
-            emailConfirm:false
+            emailConfirm:verifyID
         });
+
+        
 
         const token = user.createJWT();
 
