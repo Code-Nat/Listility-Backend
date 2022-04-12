@@ -34,7 +34,7 @@ module.exports = async function (context, req) {
 
     try {
         let user = await DB.user.findOne({ email })
-        if (result) {
+        if (user) {
             throw Error('Email already in use');
         }
 
@@ -48,6 +48,8 @@ module.exports = async function (context, req) {
         
 
         const token = user.createJWT();
+
+        context.log.info (`new user created with user ID: ${user._id}`);
 
         context.res = {
             status:201,
