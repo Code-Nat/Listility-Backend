@@ -48,7 +48,7 @@ module.exports = async function (context, req) {
             owningUser:userID
         });
 
-        context.log.info (`new list ${listId} created for user ${userID}`)
+        context.log.info (`new list ${result._id} created for user ${userID}`)
 
         context.res = {
             status:201,
